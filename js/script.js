@@ -10,20 +10,25 @@ const repoSection = document.querySelector(".repos");
 // section where individual repo data appears
 const indRepoData = document.querySelector(".repo-data");
 
+// back to repos button
+const backReposButton = document.querySelector(".view-repos");
+
+// input with search by name placeholder
+const filterInput = document.querySelector(".filter-repos");
+
 // my GitHub username
 const username = "heidi37";
 
-//fetch info from my GitHub profile
+// fetch info from my GitHub profile
 const getProfileInfo = async function () {
     const response = await fetch (`https://api.github.com/users/${username}`);
     const profileData = await response.json();
-    // console.log(profileData);
     displayUserInfo(profileData);
 };
 
 getProfileInfo();
 
-//function to display the fetched user information on the page
+// function to display the fetched user information on the page
 const displayUserInfo = function (data) {
     const userInfoDiv = document.createElement("div");
     userInfoDiv.classList.add("user-info");
@@ -42,53 +47,48 @@ const displayUserInfo = function (data) {
     getRepos();
 };
 
-//function to fetch the user's repots
+// function to fetch the user's repos
 const getRepos = async function () {
     const response = await fetch (`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`);
     const repoData = await response.json();
-    console.log(repoData);
     displayRepoDetails(repoData);
-}
+};
 
 
-//function to display info about individual repo
+// function to display list of repos
 const displayRepoDetails = function (repos) {
+    filterInput.classList.remove("hide");
     for (const repo of repos) {
         const li = document.createElement("li");
-        li.classList.add("repo");
+        li.classList.add("repo"); //assign class of repo
         li.innerHTML = `<h3>${repo.name}</h3>`;
         displayRepos.append(li);
-    };
-}
+    }
+};
 
 // listening for clicks on repos UL particularly interested in H3s
 displayRepos.addEventListener("click", function (e) {
     //was the click on an H3?
     if (e.target.matches("h3")){
         const repoName = e.target.innerText;
-        // console.log(repoName);
         getSpecficRepoInfo(repoName);
     }
-
 });
 
 // function to get specfic repo info
 const getSpecficRepoInfo = async function (repoName) {
     const response = await fetch (`https://api.github.com/repos/${username}/${repoName}`);
     const repoInfo = await response.json();
-    console.log(repoInfo);
     const fetchLanguages = await fetch(`https://api.github.com/repos/${username}/${repoName}/languages`);
     const languageData = await fetchLanguages.json();
-    console.log(languageData);
     const languages = [];
-    for (language in languageData) {
+    for (const language in languageData) {
         languages.push(language);
-    };
-    console.log(languages);
+    }
     displaySpecificRepoInfo(repoInfo, languages);
 };
 
-//function to display specific repo inro
+// function to display specific repo info
 const displaySpecificRepoInfo = function (repoInfo, languages) {
     indRepoData.innerHTML = "";
     const div = document.createElement("div");
@@ -102,8 +102,32 @@ const displaySpecificRepoInfo = function (repoInfo, languages) {
     indRepoData.append(div);
     indRepoData.classList.remove("hide");
     repoSection.classList.add("hide");
-
+    backReposButton.classList.remove("hide");
 };
+
+// click event for back button
+backReposButton.addEventListener("click", function () {
+    indRepoData.classList.add("hide");
+    repoSection.classList.remove("hide");
+    backReposButton.classList.add("hide");
+});
+
+// event listener on search box
+filterInput.addEventListener("input", function(e) {
+    const searchText = e.target.value;
+    const repos = document.querySelectorAll(".repo");
+    const lowercaseSearchText = searchText.toLowerCase();
+    for (let each of repos) {
+        const lowerRepoName = each.innerText.toLowerCase();
+        if (lowerRepoName.includes(lowercaseSearchText)){
+            each.classList.remove("hide");
+        } else {
+            each.classList.add("hide");
+        }
+    }
+});
+
+
 
 
 
